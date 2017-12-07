@@ -11,19 +11,22 @@ public class CacheManager {
 		cachedUsers = new HashSet<>();
 	}
 	
-	public void addReviews(String username, Set<String> reviews) {
-		CachedReviewUser cachedUser = new CachedReviewUser(username);
-		Iterator<String> iterator = reviews.iterator();
-		while(iterator.hasNext()) {
-			String review = iterator.next();
-			CachedReview cachedReview = new CachedReview(review);
-			cachedUser.addReview(cachedReview);
-		}
-		
+	public void addReviews(String username, Set<CachedReview> reviews) {
+		CachedReviewUser cachedUser = new CachedReviewUser(username, reviews);
 		cachedUsers.add(cachedUser);
 	}
 	
-	public int getCachedUsersSize() {
-		return cachedUsers.size();
+	public Set<CachedReviewUser> getAllCachedUsers() {
+		return cachedUsers;
+	}
+	
+	public Set<CachedReview> getAllCachedDocuments() {
+		Set<CachedReview> result = new HashSet<>();
+		Iterator<CachedReviewUser> iterator = cachedUsers.iterator();
+		while(iterator.hasNext()) {
+			CachedReviewUser cachedUser = iterator.next();
+			result.addAll(cachedUser.getReviews());
+		}
+		return result;
 	}
 }
