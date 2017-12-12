@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import ch.zhaw.ads.p10.cache.entities.CachedReview;
+import ch.zhaw.ads.p10.cache.entities.CachedReviewUser;
+
 public class CacheManager {
 	private Set<CachedReviewUser> cachedUsers;
 	

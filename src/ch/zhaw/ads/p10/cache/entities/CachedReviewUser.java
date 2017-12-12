@@ -1,4 +1,4 @@
-package ch.zhaw.ads.p10.cache;
+package ch.zhaw.ads.p10.cache.entities;
 
 import java.util.Set;
 
