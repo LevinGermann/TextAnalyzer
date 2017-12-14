@@ -3,6 +3,8 @@ package ch.zhaw.ads.p10.gui;
 import javax.swing.JDialog;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 
 import ch.zhaw.ads.p10.TextAnalyzer;
 import ch.zhaw.ads.p10.gui.listeners.ButtonClickedListener;
@@ -20,6 +22,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 
@@ -32,8 +35,9 @@ public class MainPanel extends JDialog {
 	JProgressBar pbProgressBar;
 	JTabbedPane tbpTabbedPane0;
 
-	JPanel pnPanel1;
-	JTextArea taSummary;
+	JPanel logPanel;
+	JTextArea taLog;
+	JScrollPane scpLog;
 
 	JPanel pnPanel2;
 	JTextField tfText0;
@@ -51,13 +55,15 @@ public class MainPanel extends JDialog {
 		drawComponents();
 		registerComponents();
 		enableDisableComponentStates(false);
+		btLoadDataButton.setEnabled(true);
 	}
 	
 	public void updateFolderSelection(File folder) {
 		try {
+			btLoadDataButton.setEnabled(false);
 			pbProgressBar.setMaximum(100);
 			pbProgressBar.setValue(0);
-			textAnalyzer.beginCache(folder, this);			
+			textAnalyzer.beginCache(folder, this);		
 		}catch(IOException ex) {
 			ex.printStackTrace();
 		}
@@ -65,7 +71,8 @@ public class MainPanel extends JDialog {
 
 	public void enableDisableComponentStates(boolean isEnabled) {
 		tbpTabbedPane0.setEnabled(isEnabled);
-		taSummary.setEditable(isEnabled);
+		taLog.setEditable(isEnabled);
+		btLoadDataButton.setEnabled(isEnabled);
 	}
 
 	private void registerComponents() {
@@ -105,12 +112,13 @@ public class MainPanel extends JDialog {
 
 		tbpTabbedPane0 = new JTabbedPane();
 
-		pnPanel1 = new JPanel();
+		logPanel = new JPanel();
 		GridBagLayout gbPanel1 = new GridBagLayout();
 		GridBagConstraints gbcPanel1 = new GridBagConstraints();
-		pnPanel1.setLayout(gbPanel1);
+		logPanel.setLayout(gbPanel1);
 
-		taSummary = new JTextArea(2, 10);
+		taLog = new JTextArea(2, 10);
+		scpLog = new JScrollPane( taLog );
 		gbcPanel1.gridx = 0;
 		gbcPanel1.gridy = 0;
 		gbcPanel1.gridwidth = 18;
@@ -119,9 +127,10 @@ public class MainPanel extends JDialog {
 		gbcPanel1.weightx = 1;
 		gbcPanel1.weighty = 1;
 		gbcPanel1.anchor = GridBagConstraints.NORTH;
-		gbPanel1.setConstraints(taSummary, gbcPanel1);
-		pnPanel1.add(taSummary);
-		tbpTabbedPane0.addTab("Summary", pnPanel1);
+		gbPanel1.setConstraints( scpLog, gbcPanel1 );
+		//gbPanel1.setConstraints(taLog, gbcPanel1);
+		logPanel.add( scpLog );
+		tbpTabbedPane0.addTab("Log", logPanel);
 
 		pnPanel2 = new JPanel();
 		GridBagLayout gbPanel2 = new GridBagLayout();
@@ -189,5 +198,19 @@ public class MainPanel extends JDialog {
 
 	public JProgressBar getPbProgressBar() {
 		return pbProgressBar;
+	}
+	
+	public void addLog(String logMsg) {
+		String currentLog = taLog.getText();
+		currentLog += "\n" + logMsg;
+		taLog.setText(currentLog);
+		Document doc = taLog.getDocument();
+		taLog.setCaretPosition(doc.getLength());
+	}
+
+	public void loadWords() {
+		addLog("Analysing data...");
+		textAnalyzer.startAnalysis();
+		
 	}
 }

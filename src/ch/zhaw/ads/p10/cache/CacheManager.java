@@ -9,6 +9,7 @@ import ch.zhaw.ads.p10.cache.entities.CachedReviewUser;
 
 public class CacheManager {
 	private Set<CachedReviewUser> cachedUsers;
+	private int counter = 0;
 	
 	public CacheManager() {
 		cachedUsers = new HashSet<>();
@@ -17,6 +18,7 @@ public class CacheManager {
 	public void addReviews(String username, Set<CachedReview> reviews) {
 		CachedReviewUser cachedUser = new CachedReviewUser(username, reviews);
 		cachedUsers.add(cachedUser);
+		counter += reviews.size();
 	}
 	
 	public Set<CachedReviewUser> getAllCachedUsers() {
@@ -31,5 +33,9 @@ public class CacheManager {
 			result.addAll(cachedUser.getReviews());
 		}
 		return result;
+	}
+	
+	public int getCounter() {
+		return counter;
 	}
 }

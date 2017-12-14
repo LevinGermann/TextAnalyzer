@@ -25,16 +25,10 @@ import ch.zhaw.ads.p10.filters.FolderFilenameFilter;
 import ch.zhaw.ads.p10.gui.MainPanel;
 
 public class TextAnalyzer {
-	private static final int TOTAL_USERS = 1208;
 	private CacheManager cacheManager = new CacheManager();
 	private Map<String, Integer> wordFrequency = new HashMap<>();
 
-	public static void main(String[] args){
-		TextAnalyzer textAnalyzer = new TextAnalyzer();
-			//textAnalyzer.startAnalysis();
-	}
-
-	private void startAnalysis() {
+	public void startAnalysis() {
 		System.out.println();
 		Set<CachedReviewUser> cachedUsers = cacheManager.getAllCachedUsers();
 		Set<CachedReview> cachedReviews = new HashSet<>();
