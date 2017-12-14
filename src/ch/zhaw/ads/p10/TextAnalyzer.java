@@ -17,63 +17,69 @@ import java.util.stream.Stream;
 
 import javax.swing.JProgressBar;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import ch.zhaw.ads.p10.cache.CacheManager;
 import ch.zhaw.ads.p10.cache.CacheThread;
 import ch.zhaw.ads.p10.cache.entities.CachedReview;
 import ch.zhaw.ads.p10.cache.entities.CachedReviewUser;
 import ch.zhaw.ads.p10.filters.FolderFilenameFilter;
+import ch.zhaw.ads.p10.gui.LogArea;
 import ch.zhaw.ads.p10.gui.MainPanel;
 
+@Component
 public class TextAnalyzer {
-	private CacheManager cacheManager = new CacheManager();
-	private Map<String, Integer> wordFrequency = new HashMap<>();
+	private CacheThread cacheThread;
+	private CacheManager cacheManager;
+	private LogArea logArea;
+	private final Map<String, Integer> wordFrequency = new HashMap<>();
+
+	@Autowired
+	public TextAnalyzer(CacheThread cacheThread, CacheManager cacheManager, LogArea logArea) {
+		this.cacheThread = cacheThread;
+		this.cacheManager = cacheManager;
+		this.logArea = logArea;
+	}
 
 	public void startAnalysis() {
-		System.out.println();
 		Set<CachedReviewUser> cachedUsers = cacheManager.getAllCachedUsers();
 		Set<CachedReview> cachedReviews = new HashSet<>();
 		int countOfAllWords = 0;
 		int countOfAllChars = 0;
 		Set<String> uniqueWords = new HashSet<>();
-		
-		for(CachedReviewUser user : cachedUsers) {
+
+		for (CachedReviewUser user : cachedUsers) {
 			Set<CachedReview> reviews = user.getReviews();
-			for(CachedReview review : reviews) {
+			for (CachedReview review : reviews) {
 				List<String> words = review.getWords();
 				appendInWordFrequency(words);
 				countOfAllWords += words.size();
 				uniqueWords.addAll(words);
 				cachedReviews.add(review);
-				
+
 				countOfAllChars += review.getAmountOfChars();
 			}
 		}
-		
-		System.out.println("Reviews: " + cachedReviews.size());
-		System.out.println("Unique words: " + uniqueWords.size());
-		System.out.println("Words: " + countOfAllWords);
-		System.out.println("Avg Review Length : " + countOfAllChars / cachedReviews.size());
-		System.out.println("=== Word List ===");
-		
-		LinkedHashMap<String, Integer> sorted = wordFrequency.entrySet()
-        .stream()
-        .sorted(Map.Entry.comparingByValue(/*Collections.reverseOrder()*/))
-        .collect(Collectors.toMap(
-          Map.Entry::getKey, 
-          Map.Entry::getValue, 
-          (e1, e2) -> e1, 
-          LinkedHashMap::new
-        ));
-		
+
+		logArea.addLog("Reviews: " + cachedReviews.size());
+		logArea.addLog("Unique words: " + uniqueWords.size());
+		logArea.addLog("Words: " + countOfAllWords);
+		logArea.addLog("Avg Review Length : " + countOfAllChars / cachedReviews.size());
+
+		LinkedHashMap<String, Integer> sorted = wordFrequency.entrySet().stream()
+				.sorted(Map.Entry.comparingByValue(/* Collections.reverseOrder() */))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
 		sorted.forEach((key, value) -> {
-			System.out.println(key + ": " + value);
+			//System.out.println(key + ": " + value);
 		});
 	}
 
 	private void appendInWordFrequency(List<String> words) {
-		for(String word : words) {
+		for (String word : words) {
 			Integer count = wordFrequency.get(word);
-			if(count == null) {
+			if (count == null) {
 				count = 0;
 			}
 			count++;
@@ -81,8 +87,8 @@ public class TextAnalyzer {
 		}
 	}
 
-	public void beginCache(File folder, MainPanel mainPanel) throws IOException {
-		CacheThread cacheThread = new CacheThread(folder, mainPanel, cacheManager);
+	public void beginCache(File folder) {
+		cacheThread.setChosenFolder(folder);
 		cacheThread.start();
 	}
 }

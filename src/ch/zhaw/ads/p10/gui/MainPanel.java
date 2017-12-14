@@ -2,9 +2,17 @@ package ch.zhaw.ads.p10.gui;
 
 import javax.swing.JDialog;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import ch.zhaw.ads.p10.TextAnalyzer;
 import ch.zhaw.ads.p10.gui.listeners.ButtonClickedListener;
@@ -22,56 +30,54 @@ import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 
+@Configuration
+@ComponentScan({ "ch.zhaw.ads.p10" })
+@Component
 public class MainPanel extends JDialog {
 	static MainPanel theMainPanel;
 	private TextAnalyzer textAnalyzer;
 
-	JPanel pnPanel0;
-	JButton btLoadDataButton;
-	JProgressBar pbProgressBar;
-	JTabbedPane tbpTabbedPane0;
+	private JPanel pnPanel0;
+	private JButton btLoadDataButton;
+	private JProgressBar pbProgressBar;
+	private JTabbedPane tbpTabbedPane0;
 
-	JPanel logPanel;
-	JTextArea taLog;
-	JScrollPane scpLog;
+	private JPanel logPanel;
+	private LogArea logArea;
+	private JScrollPane scpLog;
 
-	JPanel pnPanel2;
-	JTextField tfText0;
-	JButton btSearch;
-	JTable tbFrequency;
+	private JPanel pnPanel2;
+	private JTextField tfText0;
+	private JButton btSearch;
+	private JTable tbFrequency;
 
 	public static void main(String args[]) throws Exception {
 		UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		theMainPanel = new MainPanel();
-		
+		ApplicationContext context = new AnnotationConfigApplicationContext(MainPanel.class);
+		MainPanel demo = (MainPanel) context.getBean("mainPanel");
+		demo.start();
 	}
 
-	public MainPanel() {
-		textAnalyzer = new TextAnalyzer();
+	public void start() {
 		drawComponents();
 		registerComponents();
 		enableDisableComponentStates(false);
 		btLoadDataButton.setEnabled(true);
 	}
-	
+
 	public void updateFolderSelection(File folder) {
-		try {
-			btLoadDataButton.setEnabled(false);
-			pbProgressBar.setMaximum(100);
-			pbProgressBar.setValue(0);
-			textAnalyzer.beginCache(folder, this);		
-		}catch(IOException ex) {
-			ex.printStackTrace();
-		}
+		btLoadDataButton.setEnabled(false);
+		pbProgressBar.setMaximum(100);
+		pbProgressBar.setValue(0);
+		textAnalyzer.beginCache(folder);
 	}
 
 	public void enableDisableComponentStates(boolean isEnabled) {
 		tbpTabbedPane0.setEnabled(isEnabled);
-		taLog.setEditable(isEnabled);
+		logArea.getLogTextArea().setEditable(isEnabled);
 		btLoadDataButton.setEnabled(isEnabled);
 	}
 
@@ -117,8 +123,7 @@ public class MainPanel extends JDialog {
 		GridBagConstraints gbcPanel1 = new GridBagConstraints();
 		logPanel.setLayout(gbPanel1);
 
-		taLog = new JTextArea(2, 10);
-		scpLog = new JScrollPane( taLog );
+		scpLog = new JScrollPane(logArea.getLogTextArea());
 		gbcPanel1.gridx = 0;
 		gbcPanel1.gridy = 0;
 		gbcPanel1.gridwidth = 18;
@@ -127,9 +132,8 @@ public class MainPanel extends JDialog {
 		gbcPanel1.weightx = 1;
 		gbcPanel1.weighty = 1;
 		gbcPanel1.anchor = GridBagConstraints.NORTH;
-		gbPanel1.setConstraints( scpLog, gbcPanel1 );
-		//gbPanel1.setConstraints(taLog, gbcPanel1);
-		logPanel.add( scpLog );
+		gbPanel1.setConstraints(scpLog, gbcPanel1);
+		logPanel.add(scpLog);
 		tbpTabbedPane0.addTab("Log", logPanel);
 
 		pnPanel2 = new JPanel();
@@ -164,7 +168,7 @@ public class MainPanel extends JDialog {
 
 		String[][] dataFrequency = new String[][] { new String[] { "11", "21" }, new String[] { "12", "22" },
 				new String[] { "13", "23" } };
-		String[] colsFrequency = new String[] { "", "" };
+		String[] colsFrequency = new String[] { "Word", "Frequency" };
 		tbFrequency = new JTable(dataFrequency, colsFrequency);
 		JScrollPane scpFrequency = new JScrollPane(tbFrequency);
 		gbcPanel2.gridx = 0;
@@ -199,18 +203,19 @@ public class MainPanel extends JDialog {
 	public JProgressBar getPbProgressBar() {
 		return pbProgressBar;
 	}
-	
-	public void addLog(String logMsg) {
-		String currentLog = taLog.getText();
-		currentLog += "\n" + logMsg;
-		taLog.setText(currentLog);
-		Document doc = taLog.getDocument();
-		taLog.setCaretPosition(doc.getLength());
-	}
 
 	public void loadWords() {
-		addLog("Analysing data...");
+		logArea.addLog("Analysing data...");
 		textAnalyzer.startAnalysis();
-		
+	}
+
+	@Autowired
+	public final void setLogArea(LogArea logArea) {
+		this.logArea = logArea;
+	}
+
+	@Autowired
+	public final void setTextAnalyzer(TextAnalyzer textAnalyzer) {
+		this.textAnalyzer = textAnalyzer;
 	}
 }
