@@ -50,9 +50,10 @@ public class MainPanel extends JDialog {
 	private JScrollPane scpLog;
 
 	private JPanel pnPanel2;
-	private JTextField tfText0;
+	private JTextField searchTextField;
 	private JButton btSearch;
-	private JTable tbFrequency;
+	private WordListTable wordListTable;
+	private ButtonClickedListener buttonListener;
 
 	public static void main(String args[]) throws Exception {
 		UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
@@ -77,12 +78,13 @@ public class MainPanel extends JDialog {
 
 	public void enableDisableComponentStates(boolean isEnabled) {
 		tbpTabbedPane0.setEnabled(isEnabled);
-		logArea.getLogTextArea().setEditable(isEnabled);
+		logArea.setEditable(isEnabled);
 		btLoadDataButton.setEnabled(isEnabled);
 	}
 
 	private void registerComponents() {
-		btLoadDataButton.addActionListener(new ButtonClickedListener(this));
+		btLoadDataButton.addActionListener(buttonListener);
+		btSearch.addActionListener(buttonListener);
 	}
 
 	private void drawComponents() {
@@ -123,7 +125,7 @@ public class MainPanel extends JDialog {
 		GridBagConstraints gbcPanel1 = new GridBagConstraints();
 		logPanel.setLayout(gbPanel1);
 
-		scpLog = new JScrollPane(logArea.getLogTextArea());
+		scpLog = new JScrollPane(logArea);
 		gbcPanel1.gridx = 0;
 		gbcPanel1.gridy = 0;
 		gbcPanel1.gridwidth = 18;
@@ -141,7 +143,7 @@ public class MainPanel extends JDialog {
 		GridBagConstraints gbcPanel2 = new GridBagConstraints();
 		pnPanel2.setLayout(gbPanel2);
 
-		tfText0 = new JTextField();
+		searchTextField = new JTextField();
 		gbcPanel2.gridx = 0;
 		gbcPanel2.gridy = 0;
 		gbcPanel2.gridwidth = 12;
@@ -150,8 +152,8 @@ public class MainPanel extends JDialog {
 		gbcPanel2.weightx = 1;
 		gbcPanel2.weighty = 0;
 		gbcPanel2.anchor = GridBagConstraints.NORTH;
-		gbPanel2.setConstraints(tfText0, gbcPanel2);
-		pnPanel2.add(tfText0);
+		gbPanel2.setConstraints(searchTextField, gbcPanel2);
+		pnPanel2.add(searchTextField);
 
 		btSearch = new JButton("Search");
 		gbcPanel2.gridx = 12;
@@ -165,12 +167,8 @@ public class MainPanel extends JDialog {
 		gbcPanel2.insets = new Insets(0, 6, 0, 0);
 		gbPanel2.setConstraints(btSearch, gbcPanel2);
 		pnPanel2.add(btSearch);
-
-		String[][] dataFrequency = new String[][] { new String[] { "11", "21" }, new String[] { "12", "22" },
-				new String[] { "13", "23" } };
-		String[] colsFrequency = new String[] { "Word", "Frequency" };
-		tbFrequency = new JTable(dataFrequency, colsFrequency);
-		JScrollPane scpFrequency = new JScrollPane(tbFrequency);
+		
+		JScrollPane scpFrequency = new JScrollPane(wordListTable);
 		gbcPanel2.gridx = 0;
 		gbcPanel2.gridy = 1;
 		gbcPanel2.gridwidth = 18;
@@ -199,6 +197,10 @@ public class MainPanel extends JDialog {
 		pack();
 		setVisible(true);
 	}
+	
+	public String getSearchExpression() {
+		return searchTextField.getText();
+	}
 
 	public JProgressBar getPbProgressBar() {
 		return pbProgressBar;
@@ -217,5 +219,15 @@ public class MainPanel extends JDialog {
 	@Autowired
 	public final void setTextAnalyzer(TextAnalyzer textAnalyzer) {
 		this.textAnalyzer = textAnalyzer;
+	}
+	
+	@Autowired
+	public final void setWordListTable(WordListTable wordListTable) {
+		this.wordListTable = wordListTable;
+	}
+	
+	@Autowired
+	public void setButtonListener(ButtonClickedListener buttonListener) {
+		this.buttonListener = buttonListener;
 	}
 }

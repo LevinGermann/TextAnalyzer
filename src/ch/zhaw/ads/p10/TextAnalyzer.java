@@ -1,11 +1,7 @@
 package ch.zhaw.ads.p10;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -13,9 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.swing.JProgressBar;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,23 +17,16 @@ import ch.zhaw.ads.p10.cache.CacheManager;
 import ch.zhaw.ads.p10.cache.CacheThread;
 import ch.zhaw.ads.p10.cache.entities.CachedReview;
 import ch.zhaw.ads.p10.cache.entities.CachedReviewUser;
-import ch.zhaw.ads.p10.filters.FolderFilenameFilter;
 import ch.zhaw.ads.p10.gui.LogArea;
-import ch.zhaw.ads.p10.gui.MainPanel;
+import ch.zhaw.ads.p10.gui.WordListTable;
 
 @Component
 public class TextAnalyzer {
 	private CacheThread cacheThread;
 	private CacheManager cacheManager;
 	private LogArea logArea;
-	private final Map<String, Integer> wordFrequency = new HashMap<>();
-
-	@Autowired
-	public TextAnalyzer(CacheThread cacheThread, CacheManager cacheManager, LogArea logArea) {
-		this.cacheThread = cacheThread;
-		this.cacheManager = cacheManager;
-		this.logArea = logArea;
-	}
+	private WordListTable wordListTable;
+	private Map<String, Integer> wordFrequency = new HashMap<>();
 
 	public void startAnalysis() {
 		Set<CachedReviewUser> cachedUsers = cacheManager.getAllCachedUsers();
@@ -68,11 +54,13 @@ public class TextAnalyzer {
 		logArea.addLog("Avg Review Length : " + countOfAllChars / cachedReviews.size());
 
 		LinkedHashMap<String, Integer> sorted = wordFrequency.entrySet().stream()
-				.sorted(Map.Entry.comparingByValue(/* Collections.reverseOrder() */))
+				.sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
+		wordFrequency = sorted;
+		
 		sorted.forEach((key, value) -> {
-			//System.out.println(key + ": " + value);
+			wordListTable.addWord(key, value);
 		});
 	}
 
@@ -87,8 +75,43 @@ public class TextAnalyzer {
 		}
 	}
 
+	public Map<String, Integer> filterWords(String searchExpression){
+		Map<String, Integer> filtered =
+				wordFrequency.entrySet()
+	            .stream()
+	            .filter(p -> p.getKey().contains(searchExpression))
+	            .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
+		return filtered;
+	}
+	
+	public Map<String, Integer> getWordFrequency() {
+		return wordFrequency;
+	}
+	
 	public void beginCache(File folder) {
 		cacheThread.setChosenFolder(folder);
 		cacheThread.start();
 	}
+
+	@Autowired
+	public void setCacheThread(CacheThread cacheThread) {
+		this.cacheThread = cacheThread;
+	}
+
+	@Autowired
+	public void setCacheManager(CacheManager cacheManager) {
+		this.cacheManager = cacheManager;
+	}
+
+	@Autowired
+	public void setLogArea(LogArea logArea) {
+		this.logArea = logArea;
+	}
+
+	@Autowired
+	public void setWordListTable(WordListTable wordListTable) {
+		this.wordListTable = wordListTable;
+	}
+	
+	
 }

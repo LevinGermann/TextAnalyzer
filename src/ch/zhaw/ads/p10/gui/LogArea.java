@@ -7,21 +7,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LogArea extends JTextArea {
-	private JTextArea taLog;
 	
 	public LogArea() {
-		taLog = new JTextArea(2, 10);
+		super(2, 10);
 	}
 	
 	public void addLog(String logMsg) {
-		String currentLog = taLog.getText();
+		String currentLog = getText();
 		currentLog += "\n" + logMsg;
-		taLog.setText(currentLog);
-		Document doc = taLog.getDocument();
-		taLog.setCaretPosition(doc.getLength());
-	}
-	
-	public JTextArea getLogTextArea(){
-		return taLog;
+		setText(currentLog);
+		Document doc = getDocument();
+		setCaretPosition(doc.getLength());
 	}
 }
