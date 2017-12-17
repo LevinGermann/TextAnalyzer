@@ -2,26 +2,20 @@ package ch.zhaw.ads.p10.cache;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.swing.JProgressBar;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.zhaw.ads.p10.cache.entities.CachedReview;
-import ch.zhaw.ads.p10.cache.entities.CachedReviewUser;
 import ch.zhaw.ads.p10.filters.FolderFilenameFilter;
 import ch.zhaw.ads.p10.gui.LogArea;
 import ch.zhaw.ads.p10.gui.MainPanel;
@@ -65,7 +59,8 @@ public class CacheThread extends Thread {
 							while (buffer.hasRemaining()) {
 								content += (char) buffer.get();
 							}
-							
+
+							fin.close();
 							CachedReview review = new CachedReview(content, file.getName());
 							reviews.add(review);
 						} catch (Exception ex) {
@@ -73,7 +68,7 @@ public class CacheThread extends Thread {
 						}
 					});
 				}
-				
+
 				cacheManager.addReviews(user, reviews);
 				cachedDirs++;
 				int percent = (cachedDirs * 100) / directories.length;
@@ -88,7 +83,7 @@ public class CacheThread extends Thread {
 		mainPanel.loadWords();
 		mainPanel.enableDisableComponentStates(true);
 	}
-	
+
 	public void setChosenFolder(File folder) {
 		this.chosenFolder = folder;
 	}

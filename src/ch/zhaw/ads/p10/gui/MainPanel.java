@@ -1,13 +1,21 @@
 package ch.zhaw.ads.p10.gui;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.io.File;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.text.Document;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -16,22 +24,6 @@ import org.springframework.stereotype.Component;
 
 import ch.zhaw.ads.p10.TextAnalyzer;
 import ch.zhaw.ads.p10.gui.listeners.ButtonClickedListener;
-
-import javax.swing.JPanel;
-import javax.swing.BorderFactory;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.io.File;
-import java.io.IOException;
-
-import javax.swing.JButton;
-import javax.swing.JProgressBar;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTable;
-import javax.swing.JScrollPane;
 
 @Configuration
 @ComponentScan({ "ch.zhaw.ads.p10" })
@@ -167,7 +159,7 @@ public class MainPanel extends JDialog {
 		gbcPanel2.insets = new Insets(0, 6, 0, 0);
 		gbPanel2.setConstraints(btSearch, gbcPanel2);
 		pnPanel2.add(btSearch);
-		
+
 		JScrollPane scpFrequency = new JScrollPane(wordListTable);
 		gbcPanel2.gridx = 0;
 		gbcPanel2.gridy = 1;
@@ -197,7 +189,7 @@ public class MainPanel extends JDialog {
 		pack();
 		setVisible(true);
 	}
-	
+
 	public String getSearchExpression() {
 		return searchTextField.getText();
 	}
@@ -220,12 +212,12 @@ public class MainPanel extends JDialog {
 	public final void setTextAnalyzer(TextAnalyzer textAnalyzer) {
 		this.textAnalyzer = textAnalyzer;
 	}
-	
+
 	@Autowired
 	public final void setWordListTable(WordListTable wordListTable) {
 		this.wordListTable = wordListTable;
 	}
-	
+
 	@Autowired
 	public void setButtonListener(ButtonClickedListener buttonListener) {
 		this.buttonListener = buttonListener;
