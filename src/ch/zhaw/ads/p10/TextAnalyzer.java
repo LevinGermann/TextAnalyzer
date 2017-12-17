@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -58,7 +59,7 @@ public class TextAnalyzer {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 
 		wordFrequency = sorted;
-		
+
 		sorted.forEach((key, value) -> {
 			wordListTable.addWord(key, value);
 		});
@@ -75,19 +76,24 @@ public class TextAnalyzer {
 		}
 	}
 
-	public Map<String, Integer> filterWords(String searchExpression){
-		Map<String, Integer> filtered =
-				wordFrequency.entrySet()
-	            .stream()
-	            .filter(p -> p.getKey().contains(searchExpression))
-	            .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
+	public Map<String, Integer> filterWords(String searchExpression) {
+		Map<String, Integer> filtered = wordFrequency.entrySet().stream().filter(p -> {
+			boolean exsistsInSet = false;
+			Integer distance = LevenshteinDistance.getDefaultInstance().apply(p.getKey(), searchExpression);
+			if (p.getKey().contains(searchExpression)) {
+				exsistsInSet = true;
+			} else if (distance < TextAnalyzerConfig.LEVENSHTEIN_DISTANCE_MAX) {
+				exsistsInSet = true;
+			}
+			return exsistsInSet;
+		}).collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()));
 		return filtered;
 	}
-	
+
 	public Map<String, Integer> getWordFrequency() {
 		return wordFrequency;
 	}
-	
+
 	public void beginCache(File folder) {
 		cacheThread.setChosenFolder(folder);
 		cacheThread.start();
@@ -112,6 +118,5 @@ public class TextAnalyzer {
 	public void setWordListTable(WordListTable wordListTable) {
 		this.wordListTable = wordListTable;
 	}
-	
-	
+
 }
